@@ -138,7 +138,7 @@ const AsoebiTab: React.FC = () => {
               </div>
               <div className="p-3">
                 <h3 className="font-semibold mb-1 text-sm">{item.title}</h3>
-                <p className="text-rose-600 font-semibold mb-1 text-sm">₦{item.price.toFixed(2)}</p>
+                <p className="text-rose-600 font-semibold mb-1 text-sm">₦{item.price.}</p>
                 <p className="text-xs text-gray-600 mb-2">
                   For: {item.gender.charAt(0).toUpperCase() + item.gender.slice(1)}
                 </p>
