@@ -23,7 +23,7 @@ const RegistryTab: React.FC = () => {
     }
   };
   
-  const handleContribute = (item: string, price: number, currency: string) => {
+  const handleContribute = (item: string, price: number, currency: ₦) => {
     setSelectedItem({ item, price, currency });
     setShowModal(true);
   };
