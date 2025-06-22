@@ -10,21 +10,10 @@ const RegistryTab: React.FC = () => {
   const [selectedItem, setSelectedItem] = useState<{
     item: string;
     price: number;
-    currency: string;
   } | null>(null);
   
-  const getCurrencySymbol = (currency: string) => {
-    switch (currency) {
-      case 'NGN': return '₦';
-      case 'USD': return '$';
-      case 'GBP': return '£';
-      case 'EUR': return '€';
-      default: return '₦';
-    }
-  };
-  
-  const handleContribute = (item: string, price: number, currency: string) => {
-    setSelectedItem({ item, price, currency });
+  const handleContribute = (item: string, price: number) => {
+    setSelectedItem({ item, price });
     setShowModal(true);
   };
   
@@ -79,7 +68,7 @@ const RegistryTab: React.FC = () => {
                 <h3 className="font-semibold mb-1 text-sm">{item.item}</h3>
                 <p className="text-gray-600 mb-2 text-xs line-clamp-2">{item.description}</p>
                 <p className="text-rose-600 font-semibold mb-3 text-sm">
-                  {getCurrencySymbol(item.currency)}{item.price.toFixed(2)} {item.currency}
+                  ₦{item.price.toFixed(2)}
                 </p>
                 
                 <div className="flex flex-col space-y-2">
@@ -95,7 +84,7 @@ const RegistryTab: React.FC = () => {
                   )}
                   
                   <button 
-                    onClick={() => handleContribute(item.item, item.price, item.currency)}
+                    onClick={() => handleContribute(item.item, item.price)}
                     className="px-3 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition duration-300 text-xs"
                   >
                     Contribute
@@ -128,6 +117,7 @@ const RegistryTab: React.FC = () => {
                 <p className="mb-2"><strong>Account Name:</strong> {state.paymentDetails.accountName}</p>
                 <p className="mb-2"><strong>Account Number:</strong> {state.paymentDetails.accountNumber}</p>
                 <p className="mb-2"><strong>Bank:</strong> {state.paymentDetails.bankName}</p>
+                <p className="mb-2"><strong>Amount:</strong> ₦{selectedItem.price.toFixed(2)}</p>
                 <p className="mb-2"><strong>Payment Reference:</strong> {selectedItem.item} Gift</p>
               </div>
               
