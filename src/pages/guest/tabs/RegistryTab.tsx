@@ -68,7 +68,7 @@ const RegistryTab: React.FC = () => {
                 <h3 className="font-semibold mb-1 text-sm">{item.item}</h3>
                 <p className="text-gray-600 mb-2 text-xs line-clamp-2">{item.description}</p>
                 <p className="text-rose-600 font-semibold mb-3 text-sm">
-                  ₦{item.price.toFixed(2)}
+                  ₦{item.price}
                 </p>
                 
                 <div className="flex flex-col space-y-2">
