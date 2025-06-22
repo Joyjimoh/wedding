@@ -158,7 +158,7 @@ const RegistryTab: React.FC = () => {
                 </div>
                 <div className="p-3">
                   <h3 className="font-semibold mb-1 text-sm">{item.item}</h3>
-                  <p className="text-rose-600 font-semibold mb-2 text-sm">₦{item.price.toLocalString()}</p>
+                  <p className="text-rose-600 font-semibold mb-2 text-sm">₦{item.price.toLocaleString()}</p>
                   <p className="text-xs text-gray-600 mb-3 line-clamp-2">{item.description}</p>
                   
                   <button 
