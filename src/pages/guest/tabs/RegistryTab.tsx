@@ -19,11 +19,11 @@ const RegistryTab: React.FC = () => {
       case 'USD': return '$';
       case 'GBP': return '£';
       case 'EUR': return '€';
-      default: return '$';
+      default: return '₦';
     }
   };
   
-  const handleContribute = (item: string, price: number, currency: ₦) => {
+  const handleContribute = (item: string, price: number, currency: string) => {
     setSelectedItem({ item, price, currency });
     setShowModal(true);
   };
