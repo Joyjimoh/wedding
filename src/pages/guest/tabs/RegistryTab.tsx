@@ -117,7 +117,7 @@ const RegistryTab: React.FC = () => {
                 <p className="mb-2"><strong>Account Name:</strong> {state.paymentDetails.accountName}</p>
                 <p className="mb-2"><strong>Account Number:</strong> {state.paymentDetails.accountNumber}</p>
                 <p className="mb-2"><strong>Bank:</strong> {state.paymentDetails.bankName}</p>
-                <p className="mb-2"><strong>Amount:</strong> ₦{selectedItem.price)}</p>
+                <p className="mb-2"><strong>Amount:</strong> ₦{selectedItem.price}</p>
                 <p className="mb-2"><strong>Payment Reference:</strong> {selectedItem.item} Gift</p>
               </div>
               
