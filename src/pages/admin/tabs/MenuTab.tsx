@@ -3,6 +3,8 @@ import { toast } from 'react-toastify';
 import { useAppContext } from '../../../context/AppContext';
 import MenuItems from '../../../components/food/MenuItems';
 import { FoodItem, DrinkItem } from '../../../types';
+import { Edit, Trash2 } from 'lucide-react';
+import Modal from '../../../components/common/Modal';
 
 const MenuTab: React.FC = () => {
   const { state, addFoodItem, removeFoodItem, addDrinkItem, removeDrinkItem } = useAppContext();
@@ -12,12 +14,19 @@ const MenuTab: React.FC = () => {
   const [foodDescription, setFoodDescription] = useState('');
   const [foodImage, setFoodImage] = useState('');
   const [foodCategory, setFoodCategory] = useState<'main' | 'appetizer' | 'dessert'>('main');
+  const [foodGuestCategory, setFoodGuestCategory] = useState<'regular' | 'premium' | 'family'>('regular');
   
   // Drink form state
   const [drinkName, setDrinkName] = useState('');
   const [drinkDescription, setDrinkDescription] = useState('');
   const [drinkImage, setDrinkImage] = useState('');
   const [drinkCategory, setDrinkCategory] = useState<'alcoholic' | 'non-alcoholic' | 'water'>('alcoholic');
+  const [drinkGuestCategory, setDrinkGuestCategory] = useState<'regular' | 'premium' | 'family'>('regular');
+
+  // Edit modal state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editItem, setEditItem] = useState<any>(null);
+  const [editType, setEditType] = useState<'food' | 'drink'>('food');
   
   const handleAddFood = () => {
     if (!foodName.trim() || !foodDescription.trim() || !foodImage.trim()) {
@@ -29,7 +38,8 @@ const MenuTab: React.FC = () => {
       name: foodName.trim(),
       description: foodDescription.trim(),
       imageUrl: foodImage.trim(),
-      category: foodCategory
+      category: foodCategory,
+      guestCategory: foodGuestCategory
     };
     
     addFoodItem(newFood);
@@ -52,7 +62,8 @@ const MenuTab: React.FC = () => {
       name: drinkName.trim(),
       description: drinkDescription.trim(),
       imageUrl: drinkImage.trim(),
-      category: drinkCategory
+      category: drinkCategory,
+      guestCategory: drinkGuestCategory
     };
     
     addDrinkItem(newDrink);
@@ -63,6 +74,96 @@ const MenuTab: React.FC = () => {
     setDrinkImage('');
     
     toast.success('Drink item added to menu!');
+  };
+
+  const handleEditItem = (item: any, type: 'food' | 'drink', index: number) => {
+    setEditItem({ ...item, index });
+    setEditType(type);
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editItem) return;
+
+    // Remove old item and add updated one
+    if (editType === 'food') {
+      removeFoodItem(editItem.index);
+      addFoodItem({
+        name: editItem.name,
+        description: editItem.description,
+        imageUrl: editItem.imageUrl,
+        category: editItem.category,
+        guestCategory: editItem.guestCategory
+      });
+    } else {
+      removeDrinkItem(editItem.index);
+      addDrinkItem({
+        name: editItem.name,
+        description: editItem.description,
+        imageUrl: editItem.imageUrl,
+        category: editItem.category,
+        guestCategory: editItem.guestCategory
+      });
+    }
+
+    setShowEditModal(false);
+    toast.success('Item updated successfully!');
+  };
+
+  const renderMenuSection = (items: any[], category: string, type: 'food' | 'drink', onDelete: (index: number) => void) => {
+    const filteredItems = items.filter(item => item.category === category);
+    
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {filteredItems.map((item, index) => {
+          const actualIndex = items.findIndex(i => i === item);
+          return (
+            <div 
+              key={index} 
+              className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+            >
+              <div className="aspect-square overflow-hidden">
+                <img 
+                  src={item.imageUrl} 
+                  alt={item.name} 
+                  className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+              <div className="p-3">
+                <h3 className="font-semibold mb-1 text-gray-800 text-sm">{item.name}</h3>
+                <p className="text-gray-600 mb-2 text-xs line-clamp-2">{item.description}</p>
+                <p className="text-xs text-gray-500 mb-3">
+                  Guest Category: <span className="font-medium capitalize">{item.guestCategory}</span>
+                </p>
+                
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => handleEditItem(item, type, actualIndex)}
+                    className="flex-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 text-xs flex items-center justify-center gap-1"
+                  >
+                    <Edit size={12} />
+                    Edit
+                  </button>
+                  <button 
+                    onClick={() => onDelete(actualIndex)}
+                    className="flex-1 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300 text-xs flex items-center justify-center gap-1"
+                  >
+                    <Trash2 size={12} />
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {filteredItems.length === 0 && (
+          <div className="col-span-full text-center py-10 text-gray-500">
+            No items available in this category.
+          </div>
+        )}
+      </div>
+    );
   };
   
   return (
@@ -107,7 +208,7 @@ const MenuTab: React.FC = () => {
         </div>
         
         <div className="mb-4">
-          <label htmlFor="food-category" className="block text-gray-700 mb-2">Category</label>
+          <label htmlFor="food-category" className="block text-gray-700 mb-2">Food Category</label>
           <select 
             id="food-category" 
             value={foodCategory}
@@ -118,6 +219,25 @@ const MenuTab: React.FC = () => {
             <option value="appetizer">Appetizer</option>
             <option value="dessert">Dessert</option>
           </select>
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="food-guest-category" className="block text-gray-700 mb-2">Guest Category</label>
+          <select 
+            id="food-guest-category" 
+            value={foodGuestCategory}
+            onChange={(e) => setFoodGuestCategory(e.target.value as any)}
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-300"
+          >
+            <option value="regular">Regular</option>
+            <option value="premium">Premium</option>
+            <option value="family">Family</option>
+          </select>
+          <p className="text-sm text-gray-500 mt-1">
+            Regular: Only regular guests can see this item<br/>
+            Premium: Regular and premium guests can see this item<br/>
+            Family: All guests can see this item
+          </p>
         </div>
         
         <button 
@@ -132,32 +252,17 @@ const MenuTab: React.FC = () => {
           
           <div className="mt-4">
             <h5 className="font-medium mb-2">Main Courses</h5>
-            <MenuItems 
-              items={state.foodMenu} 
-              category="main" 
-              isAdmin 
-              onDelete={removeFoodItem} 
-            />
+            {renderMenuSection(state.foodMenu, 'main', 'food', removeFoodItem)}
           </div>
           
           <div className="mt-4">
             <h5 className="font-medium mb-2">Appetizers</h5>
-            <MenuItems 
-              items={state.foodMenu} 
-              category="appetizer" 
-              isAdmin 
-              onDelete={removeFoodItem} 
-            />
+            {renderMenuSection(state.foodMenu, 'appetizer', 'food', removeFoodItem)}
           </div>
           
           <div className="mt-4">
             <h5 className="font-medium mb-2">Desserts</h5>
-            <MenuItems 
-              items={state.foodMenu} 
-              category="dessert" 
-              isAdmin 
-              onDelete={removeFoodItem} 
-            />
+            {renderMenuSection(state.foodMenu, 'dessert', 'food', removeFoodItem)}
           </div>
         </div>
       </div>
@@ -202,7 +307,7 @@ const MenuTab: React.FC = () => {
         </div>
         
         <div className="mb-4">
-          <label htmlFor="drink-category" className="block text-gray-700 mb-2">Category</label>
+          <label htmlFor="drink-category" className="block text-gray-700 mb-2">Drink Category</label>
           <select 
             id="drink-category" 
             value={drinkCategory}
@@ -213,6 +318,25 @@ const MenuTab: React.FC = () => {
             <option value="non-alcoholic">Non-Alcoholic</option>
             <option value="water">Water</option>
           </select>
+        </div>
+
+        <div className="mb-4">
+          <label htmlFor="drink-guest-category" className="block text-gray-700 mb-2">Guest Category</label>
+          <select 
+            id="drink-guest-category" 
+            value={drinkGuestCategory}
+            onChange={(e) => setDrinkGuestCategory(e.target.value as any)}
+            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-300"
+          >
+            <option value="regular">Regular</option>
+            <option value="premium">Premium</option>
+            <option value="family">Family</option>
+          </select>
+          <p className="text-sm text-gray-500 mt-1">
+            Regular: Only regular guests can see this item<br/>
+            Premium: Regular and premium guests can see this item<br/>
+            Family: All guests can see this item
+          </p>
         </div>
         
         <button 
@@ -227,35 +351,104 @@ const MenuTab: React.FC = () => {
           
           <div className="mt-4">
             <h5 className="font-medium mb-2">Alcoholic Beverages</h5>
-            <MenuItems 
-              items={state.drinkMenu} 
-              category="alcoholic" 
-              isAdmin 
-              onDelete={removeDrinkItem} 
-            />
+            {renderMenuSection(state.drinkMenu, 'alcoholic', 'drink', removeDrinkItem)}
           </div>
           
           <div className="mt-4">
             <h5 className="font-medium mb-2">Non-Alcoholic Beverages</h5>
-            <MenuItems 
-              items={state.drinkMenu} 
-              category="non-alcoholic" 
-              isAdmin 
-              onDelete={removeDrinkItem} 
-            />
+            {renderMenuSection(state.drinkMenu, 'non-alcoholic', 'drink', removeDrinkItem)}
           </div>
           
           <div className="mt-4">
             <h5 className="font-medium mb-2">Water</h5>
-            <MenuItems 
-              items={state.drinkMenu} 
-              category="water" 
-              isAdmin 
-              onDelete={removeDrinkItem} 
-            />
+            {renderMenuSection(state.drinkMenu, 'water', 'drink', removeDrinkItem)}
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title={`Edit ${editType === 'food' ? 'Food' : 'Drink'} Item`}
+      >
+        {editItem && (
+          <div>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2">Name</label>
+              <input 
+                type="text" 
+                value={editItem.name}
+                onChange={(e) => setEditItem({...editItem, name: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-300"
+              />
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2">Description</label>
+              <textarea 
+                value={editItem.description}
+                onChange={(e) => setEditItem({...editItem, description: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-300" 
+                rows={2}
+              />
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2">Image URL</label>
+              <input 
+                type="text" 
+                value={editItem.imageUrl}
+                onChange={(e) => setEditItem({...editItem, imageUrl: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-300"
+              />
+            </div>
+            
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2">{editType === 'food' ? 'Food' : 'Drink'} Category</label>
+              <select 
+                value={editItem.category}
+                onChange={(e) => setEditItem({...editItem, category: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-300"
+              >
+                {editType === 'food' ? (
+                  <>
+                    <option value="main">Main Course</option>
+                    <option value="appetizer">Appetizer</option>
+                    <option value="dessert">Dessert</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="alcoholic">Alcoholic</option>
+                    <option value="non-alcoholic">Non-Alcoholic</option>
+                    <option value="water">Water</option>
+                  </>
+                )}
+              </select>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-gray-700 mb-2">Guest Category</label>
+              <select 
+                value={editItem.guestCategory}
+                onChange={(e) => setEditItem({...editItem, guestCategory: e.target.value})}
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-300"
+              >
+                <option value="regular">Regular</option>
+                <option value="premium">Premium</option>
+                <option value="family">Family</option>
+              </select>
+            </div>
+            
+            <button 
+              onClick={handleSaveEdit}
+              className="w-full px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition duration-300"
+            >
+              Save Changes
+            </button>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

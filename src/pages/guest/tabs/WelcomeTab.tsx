@@ -3,27 +3,34 @@ import { useAppContext } from '../../../context/AppContext';
 import { formatEventDate, formatEventTime } from '../../../utils/storage';
 import BackgroundImage from '../../../components/common/BackgroundImage';
 import FlowerBorder from '../../../components/common/FlowerBorder';
+import WelcomeSlideshow from '../../../components/common/WelcomeSlideshow';
 
 const WelcomeTab: React.FC = () => {
   const { state } = useAppContext();
   const guestCode = state.currentUser || '';
   const guest = guestCode ? state.guests[guestCode] : null;
   
-  const welcomeImage = state.settings.welcomeImage || 
-    "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80";
+  const welcomeImages = state.settings.welcomeImages && state.settings.welcomeImages.length > 0 
+    ? state.settings.welcomeImages 
+    : [state.settings.welcomeImage || "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"];
+
+  const getTableNumber = (seatNumber: number | null): number | null => {
+    if (!seatNumber) return null;
+    return Math.ceil(seatNumber / state.settings.seatsPerTable);
+  };
   
   return (
-    <BackgroundImage imageUrl={welcomeImage}>
+    <BackgroundImage imageUrl={welcomeImages[0]}>
       <div>
         <h2 className="text-3xl md:text-4xl text-center mb-8 text-rose-700 font-dancing">Welcome to Our Wedding</h2>
         
         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-8 hover:shadow-lg transition-shadow duration-300">
           <div className="md:flex">
             <div className="md:w-2/3">
-              <img 
-                src={welcomeImage} 
-                alt="Couple" 
-                className="w-full h-full object-cover"
+              <WelcomeSlideshow 
+                images={welcomeImages}
+                className="w-full h-64 md:h-full"
+                interval={3000}
               />
             </div>
             
@@ -42,7 +49,7 @@ const WelcomeTab: React.FC = () => {
                 {guest?.seatNumber && (
                   <>
                     <p>Seat Number: <span className="font-semibold">{guest.seatNumber}</span></p>
-                    <p>Table Number: <span className="font-semibold">{Math.ceil(guest.seatNumber / 10)}</span></p>
+                    <p>Table Number: <span className="font-semibold">{getTableNumber(guest.seatNumber)}</span></p>
                   </>
                 )}
               </div>

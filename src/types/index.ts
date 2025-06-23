@@ -4,7 +4,10 @@ export interface Settings {
   eventDate: string;
   venue: string;
   maxSeats: number;
+  seatsPerTable: number;
   welcomeImage?: string;
+  welcomeImages: string[];
+  backgroundImages: string[];
   guestPhotosLink?: string;
   theme: string;
 }
@@ -90,6 +93,7 @@ export interface Theme {
   background: string;
   text: string;
   cardBg: string;
+  isGradient?: boolean;
 }
 
 // App state

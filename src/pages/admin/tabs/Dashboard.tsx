@@ -8,6 +8,7 @@ const Dashboard: React.FC = () => {
   
   const [eventDate, setEventDate] = useState(state.settings.eventDate);
   const [maxSeats, setMaxSeats] = useState(state.settings.maxSeats);
+  const [seatsPerTable, setSeatsPerTable] = useState(state.settings.seatsPerTable);
   const [coupleNames, setCoupleNames] = useState(state.settings.coupleNames);
   const [venue, setVenue] = useState(state.settings.venue);
   const [welcomeImage, setWelcomeImage] = useState(state.settings.welcomeImage || '');
@@ -30,6 +31,7 @@ const Dashboard: React.FC = () => {
     updateSettings({
       eventDate,
       maxSeats,
+      seatsPerTable,
       coupleNames,
       venue,
       welcomeImage
@@ -113,6 +115,22 @@ const Dashboard: React.FC = () => {
               onChange={(e) => setMaxSeats(parseInt(e.target.value) || 300)}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
+          </div>
+          
+          <div>
+            <label htmlFor="seats-per-table" className="block text-gray-700 mb-2">Seats Per Table</label>
+            <input 
+              type="number" 
+              id="seats-per-table" 
+              min="1" 
+              max="20" 
+              value={seatsPerTable}
+              onChange={(e) => setSeatsPerTable(parseInt(e.target.value) || 10)}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-300"
+            />
+            <p className="text-sm text-gray-500 mt-1">
+              Table mapping: Seats 1-{seatsPerTable} = Table 1, Seats {seatsPerTable + 1}-{seatsPerTable * 2} = Table 2, etc.
+            </p>
           </div>
           
           <div>

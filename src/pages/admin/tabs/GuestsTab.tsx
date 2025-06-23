@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { toast } from 'react-toastify';
 import { useAppContext } from '../../../context/AppContext';
-import Modal from '../../../components/common/Modal';
+import EditableCell from '../../../components/common/EditableCell';
+import EditableToggle from '../../../components/common/EditableToggle';
 import { Guest } from '../../../types';
 import { Upload } from 'lucide-react';
 
@@ -9,12 +10,6 @@ const GuestsTab: React.FC = () => {
   const { state, updateGuestDetails, generateAccessCodes } = useAppContext();
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editGuest, setEditGuest] = useState<{
-    code: string;
-    guest: Guest;
-  } | null>(null);
-  
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Filter guests based on search term
@@ -27,41 +22,9 @@ const GuestsTab: React.FC = () => {
              guest.name.toLowerCase().includes(lowerSearchTerm);
     });
   
-  const handleEditGuest = (code: string, guest: Guest) => {
-    setEditGuest({ code, guest });
-    setShowEditModal(true);
-  };
-  
-  const handleSaveGuestEdit = () => {
-    if (!editGuest) return;
-    
-    const { code, guest } = editGuest;
-    
-    updateGuestDetails(code, {
-      name: guest.name,
-      arrived: guest.arrived,
-      mealServed: guest.mealServed,
-      drinkServed: guest.drinkServed,
-      selectedFood: guest.selectedFood,
-      selectedDrink: guest.selectedDrink,
-      category: guest.category
-    });
-    
-    setShowEditModal(false);
-    toast.success('Guest details updated');
-  };
-  
-  const toggleGuestStatus = (code: string, field: keyof Guest) => {
-    const guest = state.guests[code];
-    if (!guest) return;
-    
-    const newValue = !guest[field];
-    
-    updateGuestDetails(code, {
-      [field]: newValue
-    } as any);
-    
-    toast.success(`Guest ${field} status updated`);
+  const handleUpdateGuest = (code: string, field: keyof Guest, value: any) => {
+    updateGuestDetails(code, { [field]: value });
+    toast.success(`Guest ${field} updated`);
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,6 +102,11 @@ const GuestsTab: React.FC = () => {
       default: return 'bg-gray-100 text-gray-800';
     }
   };
+
+  const getTableNumber = (seatNumber: number | null): number | null => {
+    if (!seatNumber) return null;
+    return Math.ceil(seatNumber / state.settings.seatsPerTable);
+  };
   
   return (
     <div>
@@ -199,6 +167,12 @@ const GuestsTab: React.FC = () => {
                   Category
                 </th>
                 <th className="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Seat #
+                </th>
+                <th className="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  Table #
+                </th>
+                <th className="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Arrived
                 </th>
                 <th className="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -213,9 +187,6 @@ const GuestsTab: React.FC = () => {
                 <th className="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Drink Served
                 </th>
-                <th className="py-2 px-4 border-b border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Actions
-                </th>
               </tr>
             </thead>
             <tbody>
@@ -225,86 +196,55 @@ const GuestsTab: React.FC = () => {
                     {code}
                   </td>
                   <td className="py-2 px-4 border-b border-gray-200">
-                    {guest.name}
+                    <EditableCell
+                      value={guest.name}
+                      onSave={(newValue) => handleUpdateGuest(code, 'name', newValue)}
+                    />
                   </td>
                   <td className="py-2 px-4 border-b border-gray-200">
-                    <span className={`inline-block px-2 py-1 text-xs rounded-full ${getCategoryColor(guest.category)}`}>
-                      {guest.category || 'regular'}
-                    </span>
+                    <EditableCell
+                      value={guest.category || 'regular'}
+                      onSave={(newValue) => handleUpdateGuest(code, 'category', newValue)}
+                      type="select"
+                      options={['regular', 'premium', 'family']}
+                    />
                   </td>
                   <td className="py-2 px-4 border-b border-gray-200">
-                    <span 
-                      className={`inline-block px-2 py-1 text-xs rounded-full ${
-                        guest.arrived 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}
-                    >
-                      {guest.arrived ? 'Yes' : 'No'}
-                    </span>
+                    {guest.seatNumber || 'Not assigned'}
+                  </td>
+                  <td className="py-2 px-4 border-b border-gray-200">
+                    {getTableNumber(guest.seatNumber) || 'Not assigned'}
+                  </td>
+                  <td className="py-2 px-4 border-b border-gray-200">
+                    <EditableToggle
+                      value={guest.arrived}
+                      onToggle={(newValue) => handleUpdateGuest(code, 'arrived', newValue)}
+                    />
                   </td>
                   <td className="py-2 px-4 border-b border-gray-200">
                     {guest.selectedFood || 'Not selected'}
                   </td>
                   <td className="py-2 px-4 border-b border-gray-200">
-                    <label className="flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={guest.mealServed}
-                        onChange={() => toggleGuestStatus(code, 'mealServed')}
-                        className="sr-only"
-                      />
-                      <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors duration-200 ${
-                        guest.mealServed 
-                          ? 'bg-green-200 border-green-400' 
-                          : 'bg-red-200 border-red-400'
-                      }`}>
-                        {guest.mealServed && (
-                          <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </div>
-                    </label>
+                    <EditableToggle
+                      value={guest.mealServed}
+                      onToggle={(newValue) => handleUpdateGuest(code, 'mealServed', newValue)}
+                    />
                   </td>
                   <td className="py-2 px-4 border-b border-gray-200">
                     {guest.selectedDrink || 'Not selected'}
                   </td>
                   <td className="py-2 px-4 border-b border-gray-200">
-                    <label className="flex items-center cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={guest.drinkServed}
-                        onChange={() => toggleGuestStatus(code, 'drinkServed')}
-                        className="sr-only"
-                      />
-                      <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors duration-200 ${
-                        guest.drinkServed 
-                          ? 'bg-green-200 border-green-400' 
-                          : 'bg-red-200 border-red-400'
-                      }`}>
-                        {guest.drinkServed && (
-                          <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                        )}
-                      </div>
-                    </label>
-                  </td>
-                  <td className="py-2 px-4 border-b border-gray-200">
-                    <button 
-                      onClick={() => handleEditGuest(code, guest)}
-                      className="px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 text-xs"
-                    >
-                      Edit
-                    </button>
+                    <EditableToggle
+                      value={guest.drinkServed}
+                      onToggle={(newValue) => handleUpdateGuest(code, 'drinkServed', newValue)}
+                    />
                   </td>
                 </tr>
               ))}
               
               {filteredGuests.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="py-4 text-center text-gray-500">
+                  <td colSpan={10} className="py-4 text-center text-gray-500">
                     No guests found matching your search.
                   </td>
                 </tr>
@@ -313,98 +253,6 @@ const GuestsTab: React.FC = () => {
           </table>
         </div>
       </div>
-      
-      {/* Edit Guest Modal */}
-      <Modal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        title={`Edit Guest: ${editGuest?.code || ''}`}
-      >
-        {editGuest && (
-          <div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Guest Name:</label>
-              <input 
-                type="text" 
-                value={editGuest.guest.name}
-                onChange={(e) => setEditGuest({
-                  ...editGuest,
-                  guest: { ...editGuest.guest, name: e.target.value }
-                })}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-300"
-              />
-            </div>
-            
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Category:</label>
-              <select 
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-300"
-                value={editGuest.guest.category || 'regular'}
-                onChange={(e) => setEditGuest({
-                  ...editGuest,
-                  guest: { 
-                    ...editGuest.guest, 
-                    category: e.target.value as 'regular' | 'premium' | 'family'
-                  }
-                })}
-              >
-                <option value="regular">Regular</option>
-                <option value="premium">Premium</option>
-                <option value="family">Family</option>
-              </select>
-            </div>
-            
-            <div className="flex items-center mb-4">
-              <input 
-                type="checkbox"
-                id="arrived-check"
-                checked={editGuest.guest.arrived}
-                onChange={(e) => setEditGuest({
-                  ...editGuest,
-                  guest: { ...editGuest.guest, arrived: e.target.checked }
-                })}
-                className="mr-2"
-              />
-              <label htmlFor="arrived-check">Guest has arrived</label>
-            </div>
-            
-            <div className="flex items-center mb-4">
-              <input 
-                type="checkbox"
-                id="meal-check"
-                checked={editGuest.guest.mealServed}
-                onChange={(e) => setEditGuest({
-                  ...editGuest,
-                  guest: { ...editGuest.guest, mealServed: e.target.checked }
-                })}
-                className="mr-2"
-              />
-              <label htmlFor="meal-check">Meal has been served</label>
-            </div>
-            
-            <div className="flex items-center mb-6">
-              <input 
-                type="checkbox"
-                id="drink-check"
-                checked={editGuest.guest.drinkServed}
-                onChange={(e) => setEditGuest({
-                  ...editGuest,
-                  guest: { ...editGuest.guest, drinkServed: e.target.checked }
-                })}
-                className="mr-2"
-              />
-              <label htmlFor="drink-check">Drink has been served</label>
-            </div>
-            
-            <button 
-              onClick={handleSaveGuestEdit}
-              className="w-full px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition duration-300"
-            >
-              Save Changes
-            </button>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 };

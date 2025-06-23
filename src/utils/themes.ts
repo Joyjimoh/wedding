@@ -7,9 +7,10 @@ export const themes: Theme[] = [
     primary: '#e11d48',
     secondary: '#fdf2f8',
     accent: '#be185d',
-    background: '#fdf8f5',
+    background: 'linear-gradient(135deg, #fdf8f5 0%, #fef2f2 100%)',
     text: '#4a4a4a',
-    cardBg: '#ffffff'
+    cardBg: '#ffffff',
+    isGradient: true
   },
   {
     id: 'beige-elegance',
@@ -27,9 +28,10 @@ export const themes: Theme[] = [
     primary: '#7c3aed',
     secondary: '#f3e8ff',
     accent: '#5b21b6',
-    background: '#faf7ff',
+    background: 'linear-gradient(135deg, #faf7ff 0%, #f3e8ff 100%)',
     text: '#374151',
-    cardBg: '#ffffff'
+    cardBg: '#ffffff',
+    isGradient: true
   },
   {
     id: 'emerald-dream',
@@ -47,9 +49,10 @@ export const themes: Theme[] = [
     primary: '#f59e0b',
     secondary: '#fffbeb',
     accent: '#d97706',
-    background: '#fffbeb',
+    background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)',
     text: '#374151',
-    cardBg: '#ffffff'
+    cardBg: '#ffffff',
+    isGradient: true
   },
   {
     id: 'ocean-blue',
@@ -67,9 +70,10 @@ export const themes: Theme[] = [
     primary: '#ec4899',
     secondary: '#fdf2f8',
     accent: '#db2777',
-    background: '#fef7f7',
+    background: 'linear-gradient(135deg, #fef7f7 0%, #fdf2f8 100%)',
     text: '#374151',
-    cardBg: '#ffffff'
+    cardBg: '#ffffff',
+    isGradient: true
   },
   {
     id: 'sage-green',
@@ -87,9 +91,10 @@ export const themes: Theme[] = [
     primary: '#a855f7',
     secondary: '#faf5ff',
     accent: '#9333ea',
-    background: '#fefbff',
+    background: 'linear-gradient(135deg, #fefbff 0%, #faf5ff 100%)',
     text: '#374151',
-    cardBg: '#ffffff'
+    cardBg: '#ffffff',
+    isGradient: true
   },
   {
     id: 'coral-reef',
@@ -107,9 +112,10 @@ export const themes: Theme[] = [
     primary: '#1e40af',
     secondary: '#eff6ff',
     accent: '#1d4ed8',
-    background: '#f8fafc',
+    background: 'linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%)',
     text: '#374151',
-    cardBg: '#ffffff'
+    cardBg: '#ffffff',
+    isGradient: true
   },
   {
     id: 'champagne-gold',
@@ -127,9 +133,10 @@ export const themes: Theme[] = [
     primary: '#f43f5e',
     secondary: '#fff1f2',
     accent: '#e11d48',
-    background: '#fef2f2',
+    background: 'linear-gradient(135deg, #fef2f2 0%, #fff1f2 100%)',
     text: '#374151',
-    cardBg: '#ffffff'
+    cardBg: '#ffffff',
+    isGradient: true
   },
   {
     id: 'forest-green',
@@ -147,9 +154,10 @@ export const themes: Theme[] = [
     primary: '#991b1b',
     secondary: '#fef2f2',
     accent: '#7f1d1d',
-    background: '#fefefe',
+    background: 'linear-gradient(135deg, #fefefe 0%, #fef2f2 100%)',
     text: '#374151',
-    cardBg: '#ffffff'
+    cardBg: '#ffffff',
+    isGradient: true
   }
 ];
 
@@ -162,7 +170,14 @@ export const applyTheme = (theme: Theme) => {
   root.style.setProperty('--color-primary', theme.primary);
   root.style.setProperty('--color-secondary', theme.secondary);
   root.style.setProperty('--color-accent', theme.accent);
-  root.style.setProperty('--color-background', theme.background);
   root.style.setProperty('--color-text', theme.text);
   root.style.setProperty('--color-card-bg', theme.cardBg);
+  
+  // Apply background (gradient or solid)
+  if (theme.isGradient) {
+    document.body.style.background = theme.background;
+  } else {
+    document.body.style.backgroundColor = theme.background;
+    document.body.style.background = 'none';
+  }
 };
